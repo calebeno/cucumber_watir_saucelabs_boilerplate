@@ -1,10 +1,4 @@
-test_reports/**/*.png
-test_reports/**/*.gif
-test_reports/**/*.html
-test_reports/**/*.json
-/common/doc/**
-/common/.yardoc/**
-
-.idea/**/*
-.ruby-version
-Gemfile.lock
+/.bundle
+/vendor
+/results
+.vscode

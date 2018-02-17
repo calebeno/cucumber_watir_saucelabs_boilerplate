@@ -1,74 +1,66 @@
-$BROWSER_TYPE = ENV['BROWSER_TYPE'].to_s
-$BROWSER_TYPE = 'chrome' if ($BROWSER_TYPE == nil || $BROWSER_TYPE == '')
-$PNG_LOCATION =  "#{Dir.pwd}/test_reports/screenshots/#{$BROWSER_TYPE}"
+# For more information on writing hooks please read the cuke wiki
+# https://github.com/cucumber/cucumber/wiki/Hooks
 
-Before do
-    if($driver == nil)
-        setup_screenshots_directory
-        clean_screenshots_directory
-        setup_browser
-        maximize_browser
-        $page_loader = PageLoader.new
-    end
-    if ($glyptic_strips == nil)
-        $glyptic_strips = GlypticStrips.new
-    end
+RESULTS_DIR="results"
+TIMEOUT=180
+
+ if ENV["DRIVER"]
+    DRIVER = ENV["DRIVER"]
+ else
+    #DRIVER = "firefox"
+    DRIVER = "chrome"
+ end
+
+# This method to set timeout came from
+# http://stackoverflow.com/questions/9014121/how-do-i-change-the-page-load-timeouts-in-watir-webdriver-timeout-in-click-met/9044958#9044958
+# however, it's not working as expected :(
+# Maybe we can try solutions outlined here instead:
+# http://stackoverflow.com/questions/17242404/watir-implicit-wait-doesnt-seem-to-work
+# http://stackoverflow.com/questions/18204926/automate-timeout-handling-wait-and-refresh-in-watir
+# http://stackoverflow.com/questions/18659847/reload-page-until-it-has-some-element-using-ruby-selenium-webdriver/18660166#18660166
+def get_browser
+  client = Selenium::WebDriver::Remote::Http::Default.new
+  client.open_timeout = TIMEOUT # seconds – default is 30
+  browser = Watir::Browser.new DRIVER.to_sym, :http_client => client
+  return browser
 end
 
-AfterStep("@pause") do
-  puts "Press any key to continue..."
-  STDIN.getc
+Before ('@desktop') do
+  @browser = get_browser
+  screen_width = @browser.execute_script("return screen.width;")
+  screen_height = @browser.execute_script("return screen.height;")
+  @browser.driver.manage.window.resize_to(screen_width,screen_height)
 end
 
-AfterStep do
-  $glyptic_strips.take_strip_frame($driver, :watir, $PNG_LOCATION)
-end
-
-After do |scenario|
-    begin
-        relative_location = "./screenshots/#{$BROWSER_TYPE}"
-        puts $glyptic_strips.create_strip(scenario, $PNG_LOCATION, relative_location, $driver, :watir, 6)
-    rescue
-        if scenario.failed?
-            timestamp = Time.now.to_s.gsub(/:/, '-')
-            failure_screenshot = "#{Dir.pwd}/test_reports/screenshots/#{timestamp}.png"
-            $driver.screenshot.save(failure_screenshot)
-            puts "See screenshot for failure :: #{failure_screenshot}<br><a href='#{failure_screenshot}'><img width='200' src='#{failure_screenshot}'/></a>"
-        end
-    end
-end
-
-def setup_screenshots_directory
-    FileUtils.mkdir_p($PNG_LOCATION)
-end
-
-def clean_screenshots_directory
-    FileUtils.rm_rf(Dir.glob("#{$PNG_LOCATION}/*"))
-end
-
-def setup_browser
-  set_driver_path()
-  if ($BROWSER_TYPE != nil && $BROWSER_TYPE != '')
-    $driver = Watir::Browser.new $BROWSER_TYPE.to_sym
+Before ('@mobile') do
+  @browser = get_browser
+	if DRIVER == "chrome"
+    @browser.window.resize_to(640,960)
   else
-    $driver = Watir::Browser.new :chrome
+    @browser.window.maximize
   end
 end
 
-def set_driver_path
-    case $BROWSER_TYPE
-      when 'ie'
-          ie_path = File.join("#{Dir.pwd}/vendor/drivers/ie/64bit/3.3/IEDriverServer.exe")
-          Selenium::WebDriver::IE.driver_path = ie_path
-      when 'firefox'
-          firefox_path = File.join("#{Dir.pwd}/vendor/drivers/firefox/geckodriver.exe")
-          Selenium::WebDriver::Firefox.driver_path = firefox_path
-      else
-          chromedriver_path = File.join("#{Dir.pwd}/vendor/drivers/chrome/64bit/2.29/chromedriver.exe")
-          Selenium::WebDriver::Chrome.driver_path = chromedriver_path
-      end
+Before ('@tablet') do
+  @browser = get_browser
+	if DRIVER == "chrome"
+    @browser.window.resize_to(1024,768)
+  else
+    @browser.window.maximize
+  end
 end
 
-def maximize_browser
-    $driver.window.maximize
+After do
+  @browser.close
+end
+
+After do |scenario|
+  if(scenario.failed?)
+    if @browser && @browser.screenshot
+      @browser.screenshot.save("#{RESULTS_DIR}/#{scenario.__id__}.png")
+      Dir.chdir(RESULTS_DIR) do
+          embed("#{scenario.__id__}.png", "image/png", "SCREENSHOT")
+      end
+    end
+  end
 end
