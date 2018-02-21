@@ -30,7 +30,6 @@ Cucumber::Rake::Task.new(:jenkins_all, 'Run all tests for Jenkins CI') do |t|
     'HEADLESS=true'"
 end
 
-
 Cucumber::Rake::Task.new(:regression, 'Runs tests tagged as regression') do |t|
   t.cucumber_opts = "features/*
     --format html --out=results/regression-report.html
@@ -63,3 +62,10 @@ Cucumber::Rake::Task.new(:tablet, 'Runs test tagged as tablet') do |t|
     --tag @tablet"
 end
 
+Cucumber::Rake::Task.new(:wip, 'Runs test tagged as wip') do |t|
+  t.cucumber_opts = "features/*
+    --format html --out=results/wip-report.html
+    --format pretty --no-source
+    --format rerun --out results/wip-rerun.txt
+    --tag @wip"
+end

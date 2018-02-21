@@ -13,4 +13,5 @@ gem 'page-object'
 gem 'minitest'
 
 
-gem "chromedriver-helper"
+gem 'chromedriver-helper'
+gem 'geckodriver-helper'

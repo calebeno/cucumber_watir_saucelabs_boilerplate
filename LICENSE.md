@@ -2,7 +2,7 @@ The MIT License
 ===============
 
 Copyright (c) 2014 Modus Create, Inc.
-Copyright (c) 2018 calebeno
+Copyright (c) 2018 Caleb Eno
 -------------------------------------
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

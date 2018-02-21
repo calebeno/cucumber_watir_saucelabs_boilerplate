@@ -7,20 +7,13 @@ TIMEOUT=180
  if ENV["DRIVER"]
     DRIVER = ENV["DRIVER"]
  else
-    #DRIVER = "firefox"
+    # DRIVER = "firefox"
     DRIVER = "chrome"
  end
 
-# This method to set timeout came from
-# http://stackoverflow.com/questions/9014121/how-do-i-change-the-page-load-timeouts-in-watir-webdriver-timeout-in-click-met/9044958#9044958
-# however, it's not working as expected :(
-# Maybe we can try solutions outlined here instead:
-# http://stackoverflow.com/questions/17242404/watir-implicit-wait-doesnt-seem-to-work
-# http://stackoverflow.com/questions/18204926/automate-timeout-handling-wait-and-refresh-in-watir
-# http://stackoverflow.com/questions/18659847/reload-page-until-it-has-some-element-using-ruby-selenium-webdriver/18660166#18660166
 def get_browser
   client = Selenium::WebDriver::Remote::Http::Default.new
-  client.open_timeout = TIMEOUT # seconds – default is 30
+  client.open_timeout = TIMEOUT
   browser = Watir::Browser.new DRIVER.to_sym, :http_client => client
   return browser
 end
