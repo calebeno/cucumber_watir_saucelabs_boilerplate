@@ -11,3 +11,6 @@ gem 'syntax'
 gem 'watir', '~> 6.0'
 gem 'page-object'
 gem 'minitest'
+
+
+gem "chromedriver-helper"
